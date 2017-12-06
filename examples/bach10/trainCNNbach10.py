@@ -151,7 +151,7 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
     losser : list
         The losses for each epoch, stored in a list
     """
-
+    # Placeholders
     logging.info("Building Autoencoder")
     input_var2 = T.tensor4('inputs')
     target_var2 = T.tensor4('targets')
@@ -160,31 +160,39 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
     eps=1e-18
     alpha=0.001
 
+    # Build network using build_ca function above
     network2 = fun(input_var=input_var2,batch_size=train.batch_size,time_context=train.time_context,feat_size=train.input_size)
 
     if load:
         params=load_model(model)
         lasagne.layers.set_all_param_values(network2,params)
 
+    # Get masks (deterministic sets mode to test for e.g. dropout layers):
+    # m_n(f) = |pred_n(f)| / Σ(|pred_n'(f)|)
     prediction2 = lasagne.layers.get_output(network2, deterministic=True)
 
     rand_num = np.random.uniform(size=(train.batch_size,1,train.time_context,train.input_size))
 
-    s1=prediction2[:,0:1,:,:]
-    s2=prediction2[:,1:2,:,:]
-    s3=prediction2[:,2:3,:,:]
-    s4=prediction2[:,3:4,:,:]
+    s1=prediction2[:,0:1,:,:] # source mask 1
+    s2=prediction2[:,1:2,:,:] # source mask 2
+    s3=prediction2[:,2:3,:,:] # source mask 3
+    s4=prediction2[:,3:4,:,:] # source mask 4
 
     mask1=s1/(s1+s2+s3+s4+eps*rand_num)
     mask2=s2/(s1+s2+s3+s4+eps*rand_num)
     mask3=s3/(s1+s2+s3+s4+eps*rand_num)
     mask4=s4/(s1+s2+s3+s4+eps*rand_num)
 
+    # Extract source signals:
+    # source_n(f) = m_n(f) * x(f), 
+    # where x(f) is the spectrogram of the input mixture signal
     source1=mask1*input_var2[:,0:1,:,:]
     source2=mask2*input_var2[:,0:1,:,:]
     source3=mask3*input_var2[:,0:1,:,:]
     source4=mask4*input_var2[:,0:1,:,:]
 
+    # Compute mean-squared-error loss:
+    # L = Σ(||source_n - target_source_n||^2)
     train_loss_recon1 = lasagne.objectives.squared_error(source1,target_var2[:,0:1,:,:])
     train_loss_recon2 = lasagne.objectives.squared_error(source2,target_var2[:,1:2,:,:])
     train_loss_recon3 = lasagne.objectives.squared_error(source3,target_var2[:,2:3,:,:])
@@ -197,6 +205,7 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
 
     loss=abs(error1+error2+error3+error4)
 
+    # Update network via SGD
     params1 = lasagne.layers.get_all_params(network2, trainable=True)
 
     updates = lasagne.updates.adadelta(loss, params1)
@@ -209,6 +218,7 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
 
     losser=[]
 
+    # Training loop
     if not skip_train:
 
         logging.info("Training...")

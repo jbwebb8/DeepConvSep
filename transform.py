@@ -175,7 +175,7 @@ class Transforms(object):
             f_in = f_in.reshape(shape)
             return f_in
         else:
-            print 'Shape of loaded array does not match with the original shape of the transform'
+            print('Shape of loaded array does not match with the original shape of the transform')
 
     def save_shape(self,shape_file,shape):
         """

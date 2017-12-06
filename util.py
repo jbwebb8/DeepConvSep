@@ -24,14 +24,14 @@ import os
 import sys
 from os import listdir
 from os.path import isfile, join
-import cPickle as pickle
+import _pickle as pickle
 from bisect import bisect_left, bisect_right
 import itertools as it
 from scipy.interpolate import interp1d,InterpolatedUnivariateSpline
 
 import scipy.io.wavfile
 
-import Queue
+import queue
 import time
 import threading
 
@@ -202,7 +202,7 @@ def fixoverlap(slices):
 
 def getPitches(pitch,shape_time,interp='zero'):
     if len(pitch.shape)<2:
-        print 'shape of pitches should be (ninst,npitches,values)'
+        print('shape of pitches should be (ninst,npitches,values)')
     npitches = pitch.shape[1]
     ninst = pitch.shape[0]
     pitchr = np.zeros((ninst,npitches,shape_time))
@@ -410,7 +410,7 @@ def getMidi(instrument,FilePath,beginTime,finishTime,samplerate,hop,window,timeS
                     l=l+1
                 if l>=nlines:
                     l=nlines-1
-                    print "no space to store note: "+str(i)
+                    print("no space to store note: "+str(i))
             melody[l,melodyBegin:melodyEnd]=str2midi(melNotesMIDI[i])
 
         melodyBegin = [np.maximum(0,mel - timeSpan_on) for mel in melTimeStampsBegin]
@@ -609,7 +609,7 @@ def read_mat(matfile):
         mat = io.loadmat(matfile)
         return mat
     else:
-        print 'mat file could not be found'
+        print('mat file could not be found')
         return
 
 
