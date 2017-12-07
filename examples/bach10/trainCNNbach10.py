@@ -232,12 +232,17 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
             err4=0
             start_time = time.time()
             for batch in range(train.iteration_size):
+                # Get inputs and target sources from LargeDataset instance:
+                # inputs shape = [batch_size, feat_size, time_context]
+                # target shape = [batch_size, feat_size, time_context * num_sources]
                 inputs, target = train()
 
+                # Set arrays to feed into network into NCHW format
                 jump = inputs.shape[2]
                 targets=np.ndarray(shape=(inputs.shape[0],4,inputs.shape[1],inputs.shape[2]))
                 inputs=np.reshape(inputs,(inputs.shape[0],1,inputs.shape[1],inputs.shape[2]))
 
+                # Set target array of source n to target[:,:,time_context*(n-1):time_context*n]
                 targets[:,0,:,:]=target[:,:,:jump]
                 targets[:,1,:,:]=target[:,:,jump:jump*2]
                 targets[:,2,:,:]=target[:,:,jump*2:jump*3]
@@ -245,14 +250,16 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
                 target=None
                 #gc.collect()
 
-                train_err+=train_fn(inputs,targets)
-                [e1,e2,e3,e4]=train_fn1(inputs,targets)
+                # Perform learning step and track loss
+                train_err+=train_fn(inputs,targets) # total loss
+                [e1,e2,e3,e4]=train_fn1(inputs,targets) # source losses
                 err1 += e1
                 err2 += e2
                 err3 += e3
                 err4 += e4
                 train_batches += 1
 
+            # Log info and save model after each epoch
             logging.info("Epoch {} of {} took {:.3f}s".format(
                 epoch + 1, num_epochs, time.time() - start_time))
             logging.info("  training loss:\t\t{:.6f}".format(train_err/train_batches))
