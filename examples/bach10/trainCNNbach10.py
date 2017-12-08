@@ -29,10 +29,10 @@ import re
 from scipy.signal import blackmanharris as blackmanharris
 import shutil
 import time
-import cPickle
+import pickle
 import re
 import climate
-import ConfigParser
+import configparser
 
 import theano
 import theano.tensor as T
@@ -52,14 +52,14 @@ climate.enable_default_logging()
 
 def load_model(filename):
     f=file(filename,'rb')
-    params=cPickle.load(f)
+    params=pickle.load(f)
     f.close()
     return params
 
 def save_model(filename, model):
     params=lasagne.layers.get_all_param_values(model)
     f = file(filename, 'wb')
-    cPickle.dump(params,f,protocol=cPickle.HIGHEST_PROTOCOL)
+    pickle.dump(params,f,protocol=pickle.HIGHEST_PROTOCOL)
     f.close()
     return None
 
@@ -520,6 +520,6 @@ if __name__ == "__main__":
         outdir1=os.path.join(output,'output',model+"_original"),testdir1=dbs,testfile_list1=testfile_list,
         model=os.path.join(output,"models","model_"+model+".pkl"),num_epochs=nepochs,scale_factor=scale_factor_test,load=load,skip_train=skip)
     f = file(os.path.join(output,"models","loss_"+model+".data"), 'wb')
-    cPickle.dump(train_errs,f,protocol=cPickle.HIGHEST_PROTOCOL)
+    pickle.dump(train_errs,f,protocol=pickle.HIGHEST_PROTOCOL)
     f.close()
 

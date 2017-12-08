@@ -23,7 +23,7 @@ import os
 import sys
 from os import listdir
 from os.path import isfile, join
-import cPickle as pickle
+import pickle as pickle
 import random
 import re
 import multiprocessing
