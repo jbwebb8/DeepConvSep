@@ -83,9 +83,10 @@ def build_ca(input_var=None, batch_size=32,time_context=30,feat_size=513):
         The output of the network
     """
 
+    batch_size = int(batch_size)
     input_shape=(batch_size,1,time_context,feat_size)
     #scaled_tanh = lasagne.nonlinearities.ScaledTanH(scale_in=1, scale_out=0.5)
-
+    
     l_in_1 = lasagne.layers.InputLayer(shape=input_shape, input_var=input_var)
 
     l_conv1 = lasagne.layers.Conv2DLayer(l_in_1, num_filters=30, filter_size=(1,30),stride=(1,4), pad='valid', nonlinearity=None)
@@ -236,7 +237,7 @@ def train_auto(train,fun,transform,testdir,outdir,testfile_list,testdir1,outdir1
                 # inputs shape = [batch_size, feat_size, time_context]
                 # target shape = [batch_size, feat_size, time_context * num_sources]
                 inputs, target = train()
-
+                
                 # Set arrays to feed into network into NCHW format
                 jump = inputs.shape[2]
                 targets=np.ndarray(shape=(inputs.shape[0],4,inputs.shape[1],inputs.shape[2]))
